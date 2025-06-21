@@ -1,0 +1,86 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Refund Policy - TechTrend Innovationshop</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; margin: 0; padding: 0; background-color: #FFFFFF; color: #333; }
+        header { background-color: #1E90FF; color: #FFFFFF; text-align: center; padding: 2rem; }
+        header h1 { margin: 0; font-size: 2.5rem; }
+        nav { background-color: #FFD700; padding: 1rem; }
+        nav ul { list-style: none; margin: 0; padding: 0; display: flex; justify-content: center; }
+        nav ul li { margin: 0 1rem; }
+        nav ul li a { color: #333; text-decoration: none; font-weight: bold; }
+        nav ul li a:hover { color: #1E90FF; }
+        .refund-page { max-width: 800px; margin: 2rem auto; padding: 2rem; background-color: #FFFFFF; border: 1px solid #DDD; border-radius: 10px; }
+        .refund-page h2 { color: #1E90FF; font-size: 2rem; margin-bottom: 1rem; }
+        .refund-page p { margin-bottom: 1rem; }
+        footer { background-color: #1E90FF; color: #FFFFFF; text-align: center; padding: 1rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TechTrend Innovationshop</h1>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="index.html#products">Products</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="refund.html">Refund Policy</a></li>
+        </ul>
+    </nav>
+    <section class="refund-page">
+        <h2>Refund Policy</h2>
+        <p>At TechTrend Innovationshop, we want you to be satisfied with your purchase. If you are not satisfied, we offer a return policy for eligible items within 7–15 days from the delivery date, subject to the following conditions:</p>
+        <p><strong>Eligibility</strong>: Items must be unused, in their original condition, and in original packaging. Returns are accepted for defective, damaged, or incorrect items only.</p>
+        <p><strong>Process</strong>: Contact us at <a href="mailto:admin@vividassistpro.com">admin@vividassistpro.com</a> within 7–15 days of delivery to initiate a return. You will receive a return authorization and instructions. Customers are responsible for return shipping costs unless the item is defective or incorrect.</p>
+        <p><strong>Refunds</strong>: Once the returned item is received and inspected (typically within 5–7 business days), a refund will be issued to the original payment method (Stripe or PayPal). Refunds exclude original shipping costs. Processing may take 3–10 business days depending on your payment provider.</p>
+        <p><strong>Non-Returnable Items</strong>: Personalized items, used products, or items damaged by the customer are not eligible for return.</p>
+        <p><strong>Contact</strong>: For questions, email us at <a href="mailto:admin@vividassistpro.com">admin@vividassistpro.com</a>.</p>
+    </section>
+    <footer>
+        <p>&copy; 2025 TechTrend Innovationshop. All rights reserved.</p>
+    </footer>
+</body>
+</html>
