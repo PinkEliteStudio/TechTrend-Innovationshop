@@ -1,0 +1,303 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechTrend Innovationshop</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #333;
+        }
+        header {
+            background-color: #1E90FF;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 2rem;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        nav {
+            background-color: #FFD700;
+            padding: 1rem;
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        nav ul li {
+            margin: 0 1rem;
+        }
+        nav ul li a {
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav ul li a:hover {
+            color: #1E90FF;
+        }
+        .hero {
+            text-align: center;
+            padding: 3rem 1rem;
+            background-color: #F5F5F5;
+        }
+        .hero h2 {
+            font-size: 2rem;
+            color: #1E90FF;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .hero a {
+            background-color: #FFD700;
+            color: #333;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .hero a:hover {
+            background-color: #1E90FF;
+            color: #FFFFFF;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .product-card {
+            background-color: #FFFFFF;
+            border: 1px solid #DDD;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .product-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        .product-card h3 {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+            color: #1E90FF;
+        }
+        .product-card p {
+            font-size: 1rem;
+            color: #333;
+        }
+        .product-card a {
+            background-color: #FFD700;
+            color: #333;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        .product-card a:hover {
+            background-color: #1E90FF;
+            color: #FFFFFF;
+        }
+        .payment-options {
+            text-align: center;
+            padding: 1rem;
+            background-color: #F5F5F5;
+        }
+        .payment-options img {
+            width: 100px;
+            margin: 0 1rem;
+        }
+        footer {
+            background-color: #1E90FF;
+            color: #FFFFFF podcast:0⁊
+            text-align: center;
+            padding: 1rem;
+        }
+        footer p {
+            margin: 0;
+        }
+        .contact-page, .refund-page {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #FFFFFF;
+            border: 1px solid #DDD;
+            border-radius: 10px;
+        }
+        .contact-page h2, .refund-page h2 {
+            color: #1E90FF;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .contact-page form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .contact-page input, .contact-page textarea {
+            padding: 0.5rem;
+            border: 1px solid #DDD;
+            border-radius: 5px;
+        }
+        .contact-page button {
+            background-color: #FFD700;
+            color: #333;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .contact-page button:hover {
+            background-color: #1E90FF;
+            color: #FFFFFF;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TechTrend Innovationshop</h1>
+        <p>Your One-Stop Shop for Trending Tech, Home, and Pet Products</p>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#products">Products</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="refund.html">Refund Policy</a></li>
+        </ul>
+    </nav>
+    <section class="hero">
+        <h2>Discover the Latest Trends in 2025</h2>
+        <p>Shop high-quality, in-demand products with fast shipping and secure payments.</p>
+        <a href="#products">Shop Now</a>
+    </section>
+    <section id="products" class="products">
+        <!-- Products will be populated by JavaScript -->
+    </section>
+    <section class="payment-options">
+        <h3>Secure Payments</h3>
+        <img src="https://stripe.com/img/v3/home/brand-logos/stripe-logo-white.png" alt="Stripe">
+        <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" alt="PayPal">
+    </section>
+    <footer>
+        <p>&copy; 2025 TechTrend Innovationshop. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const products = [
+            {
+                category: "Tech",
+                name: "Wireless Charger",
+                price: "$15–$25",
+                image: "https://via.placeholder.com/200x200?text=Wireless+Charger",
+                link: "#"
+            },
+            {
+                category: "Home",
+                name: "Insulated Tumbler",
+                price: "$25–$40",
+                image: "https://via.placeholder.com/200x200?text=Insulated+Tumbler",
+                link: "#"
+            },
+            {
+                category: "Pet",
+                name: "Pet Collar",
+                price: "$12 “‘$20",
+                image: "https://via.placeholder.com/200x200?text=Pet+Collar",
+                link: "#"
+            },
+            {
+                category: "Tech",
+                name: "Neck Massager",
+                price: "$25–$45",
+                image: "https://via.placeholder.com/200x200?text=Neck+Massager",
+                link: "#"
+            },
+            {
+                category: "Home",
+                name: "Robot Vacuum Cleaner",
+                price: "$100–$150",
+                image: "https://via.placeholder.com/200x200?text=Robot+Vacuum",
+                link: "#"
+CJ Price: $50–$80.
+Amazon Price: $100–$150.
+Profit: $30–$60.
+            }
+        ];
+
+        const productContainer = document.querySelector('.products');
+        const categories = ['Tech', 'Home', 'Pet'];
+
+        categories.forEach(category => {
+            const categoryDiv = document.createElement('div');
+            categoryDiv.innerHTML = `<h2>${category}</h2>`;
+            const categoryProducts = products.filter(product => product.category === category);
+            categoryProducts.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'product-card';
+                productCard.innerHTML = `
+                    <img src="${product.image}" alt="${product.name}">
+                    <h3>${product.name}</h3>
+                    <p>${product.price}</p>
+                    <a href="${product.link}" target="_blank">Buy Now on Amazon</a>
+                `;
+                categoryDiv.appendChild(productCard);
+            });
+            productContainer.appendChild(categoryDiv);
+        });
+    </script>
+</body>
+</html>
