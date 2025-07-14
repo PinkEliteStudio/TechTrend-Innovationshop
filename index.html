@@ -4,6 +4,48 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechTrend Innovationshop</title>
+    <script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {
+            "Amazon_Affiliate_Products.csv": `Product Name,Description,Affiliate Link,Image URL,Price,Category
+amika Superfruit Star Lightweight Hair Styling Oil,"Lightweight hair oil that unleashes hair's 7x stronger, 2x smoother with 86% less breakage, clinically proven, 1.7 fl oz",https://amzn.to/40NrmP4,https://m.media-amazon.com/images/I/61FKod3IgOL._SX522_.jpg,$22.00,Hair Care
+ALFHEIM Caffeine Shampoo and Conditioner Set,"Strengthens hair & supports scalp health, Biotin & Niacinamide for thicker, fuller hair, 10.7 oz each",https://amzn.to/46H4Ivv,https://m.media-amazon.com/images/I/61H2lhYKaOL._SX679_.jpg,$18.99,Hair Care
+2-in-1 Hairbrush Mister - Innovative Hair Mist & Brushing Tool,"Wet & Dry hair styling with no-tangle bristles, easy-to-use water reservoir, White color, 1 count",https://amzn.to/4kBNqU0,https://m.media-amazon.com/images/I/61xggPBJtcL._SX679_.jpg,$24.99,Hair Care
+Amazon Essentials Women's Thong Sandals,"Comfortable thong sandals with faux crocodile finish, Brown color, 1 pair",https://amzn.to/44LDCB0,https://m.media-amazon.com/images/I/61IDhbj+h2L._AC_SX679_.jpg,$16.00,Footwear
+ZESICA Women's 2025 Boho Sexy Off Shoulder Long Sleeve Smocked High Waist Side Split Flowy A Line Tiered Long Maxi Dress,"Elegant boho maxi dress, White color, 1 piece",https://amzn.to/44KILsL,https://m.media-amazon.com/images/I/61U1yYFY0ZL._AC_SX569_.jpg,$59.99,Clothing
+REJURAN Nutritive Cream, c-PDRN - Salmon DNA Facial Moisturizer for Nourishing,https://amzn.to/44shTiy,https://m.media-amazon.com/images/I/710zUNkl7GL._SX679_.jpg,$54.99,Skincare
+Karseell Collagen Hair Treatment Deep Repair Conditioning Argan Oil Collagen Hair Mask Essence for Dry Damaged Hair All Hair Types 16.90 oz or 500ml,"Deep repair hair mask with argan oil, 16.9 oz",https://amzn.to/46bdIsM,https://m.media-amazon.com/images/I/41pqruOtOaL._SX300_SY300_QL70_FMwebp_.jpg,$24.99,Hair Care
+BIODANCE Bio-Collagen Real Deep Mask, Pore Perfecting,https://amzn.to/44RbbBL,https://m.media-amazon.com/images/I/41Z4gcPQqQL._SX300_SY300_QL70_FMwebp_.jpg,$19.99,Skincare
+Ragkwn Retinol Cream for Face, Collagen Neck Creams for Tightening and Firming. Aging Day & Night Facial Moisturizer for Women & Men,https://amzn.to/44uRDUP,https://m.media-amazon.com/images/I/41saOKMzwkL._SX300_SY300_QL70_FMwebp_.jpg,$25.99,Skincare`
+        };
+        function filledCell(cell) {
+            return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    var filteredData = jsonData.filter(row => row.some(filledCell));
+                    var headerRowIndex = filteredData.findIndex((row, index) =>
+                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                        headerRowIndex = 0;
+                    }
+                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                    return XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+    </script>
     <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
     <style>
         body {
@@ -224,7 +266,6 @@
                     // Cleaning and processing data, filtering out incomplete or duplicate entries
                     const cleanedData = results.data
                         .filter(row => {
-                            // Ensure all required fields are present and non-empty
                             return row["Product Name"] && row["Price"] && row["Affiliate Link"] && row["Image URL"] && row["Category"];
                         })
                         .map(row => ({
@@ -235,7 +276,6 @@
                             link: row["Affiliate Link"] || "#"
                         }))
                         .filter((product, index, self) =>
-                            // Remove duplicates based on Product Name
                             index === self.findIndex(p => p.name === product.name)
                         );
 
