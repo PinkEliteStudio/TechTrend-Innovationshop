@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TechTrend Innovationshop</title>
+    <script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {
+            "Amazon_Affiliate_Products.csv": `Product Name,Description,Affiliate Link,Image URL,Price,Category
+amika Superfruit Star Lightweight Hair Styling Oil,"Lightweight hair oil that unleashes hair's 7x stronger, 2x smoother with 86% less breakage, clinically proven, 1.7 fl oz",https://amzn.to/40NrmP4,https://m.media-amazon.com/images/I/61FKod3IgOL._SX522_.jpg,$22.00,Hair Care
+ALFHEIM Caffeine Shampoo and Conditioner Set,"Strengthens hair & supports scalp health, Biotin & Niacinamide for thicker, fuller hair, 10.7 oz each",https://amzn.to/46H4Ivv,https://m.media-amazon.com/images/I/61H2lhYKaOL._SX679_.jpg,$18.99,Hair Care
+2-in-1 Hairbrush Mister - Innovative Hair Mist & Brushing Tool,"Wet & Dry hair styling with no-tangle bristles, easy-to-use water reservoir, White color, 1 count",https://amzn.to/4kBNqU0,https://m.media-amazon.com/images/I/61xggPBJtcL._SX679_.jpg,$24.99,Hair Care
+Amazon Essentials Women's Thong Sandals,"Comfortable thong sandals with faux crocodile finish, Brown color, 1 pair",https://amzn.to/44LDCB0,https://m.media-amazon.com/images/I/61IDhbj+h2L._AC_SX679_.jpg,$16.00,Footwear
+ZESICA Women's 2025 Boho Sexy Off Shoulder Long Sleeve Smocked High Waist Side Split Flowy A Line Tiered Long Maxi Dress,"Elegant boho maxi dress, White color, 1 piece",https://amzn.to/44KILsL,https://m.media-amazon.com/images/I/61U1yYFY0ZL._AC_SX569_.jpg,$59.99,Clothing
+REJURAN Nutritive Cream, c-PDRN - Salmon DNA Facial Moisturizer for Nourishing,https://amzn.to/44shTiy,https://m.media-amazon.com/images/I/710zUNkl7GL._SX679_.jpg,$54.99,Skincare
+Karseell Collagen Hair Treatment Deep Repair Conditioning Argan Oil Collagen Hair Mask Essence for Dry Damaged Hair All Hair Types 16.90 oz or 500ml,"Deep repair hair mask with argan oil, 16.9 oz",https://amzn.to/46bdIsM,https://m.media-amazon.com/images/I/41pqruOtOaL._SX300_SY300_QL70_FMwebp_.jpg,$24.99,Hair Care
+BIODANCE Bio-Collagen Real Deep Mask, Pore Perfecting,https://amzn.to/44RbbBL,https://m.media-amazon.com/images/I/41Z4gcPQqQL._SX300_SY300_QL70_FMwebp_.jpg,$19.99,Skincare
+Ragkwn Retinol Cream for Face, Collagen Neck Creams for Tightening and Firming. Aging Day & Night Facial Moisturizer for Women & Men,https://amzn.to/44uRDUP,https://m.media-amazon.com/images/I/41saOKMzwkL._SX300_SY300_QL70_FMwebp_.jpg,$25.99,Skincare`
+        };
+        function filledCell(cell) {
+            return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+            if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+                try {
+                    var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                    var firstSheetName = workbook.SheetNames[0];
+                    var worksheet = workbook.Sheets[firstSheetName];
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                    var filteredData = jsonData.filter(row => row.some(filledCell));
+                    var headerRowIndex = filteredData.findIndex((row, index) =>
+                        row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                    );
+                    if (headerRowIndex === -1 || headerRowIndex > 25) {
+                        headerRowIndex = 0;
+                    }
+                    var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
+                    return XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                } catch (e) {
+                    console.error(e);
+                    return "";
+                }
+            }
+            return gk_fileData[filename] || "";
+        }
+    </script>
+    <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #FFFFFF;
+            color: #333;
+        }
+        header {
+            background-color: #1E90FF;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 2rem;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+        nav {
+            background-color: #FFD700;
+            padding: 1rem;
+        }
+        nav ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+        nav ul li {
+            margin: 0 1rem;
+        }
+        nav ul li a {
+            color: #333;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        nav ul li a:hover {
+            color: #1E90FF;
+        }
+        .hero {
+            text-align: center;
+            padding: 3rem 1rem;
+            background-color: #F5F5F5;
+        }
+        .hero h2 {
+            font-size: 2rem;
+            color: #1E90FF;
+        }
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+        .hero a {
+            background-color: #FFD700;
+            color: #333;
+            padding: 0.8rem 1.5rem;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .hero a:hover {
+            background-color: #1E90FF;
+            color: #FFFFFF;
+        }
+        .products {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .product-card {
+            background-color: #FFFFFF;
+            border: 1px solid #DDD;
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .product-card img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 5px;
+        }
+        .product-card h3 {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+            color: #1E90FF;
+        }
+        .product-card p {
+            font-size: 1rem;
+            color: #333;
+        }
+        .product-card a {
+            background-color: #FFD700;
+            color: #333;
+            padding: 0.5rem 1rem;
+            text-decoration: none;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        .product-card a:hover {
+            background-color: #1E90FF;
+            color: #FFFFFF;
+        }
+        .payment-options {
+            text-align: center;
+            padding: 1rem;
+            background-color: #F5F5F5;
+        }
+        .payment-options img {
+            width: 100px;
+            margin: 0 1rem;
+        }
+        footer {
+            background-color: #1E90FF;
+            color: #FFFFFF;
+            text-align: center;
+            padding: 1rem;
+        }
+        footer p {
+            margin: 0;
+        }
+        .contact-page, .refund-page {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background-color: #FFFFFF;
+            border: 1px solid #DDD;
+            border-radius: 10px;
+        }
+        .contact-page h2, .refund-page h2 {
+            color: #1E90FF;
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+        .contact-page form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .contact-page input, .contact-page textarea {
+            padding: 0.5rem;
+            border: 1px solid #DDD;
+            border-radius: 5px;
+        }
+        .contact-page button {
+            background-color: #FFD700;
+            color: #333;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .contact-page button:hover {
+            background-color: #1E90FF;
+            color: #FFFFFF;
+        }
+        .error-message {
+            text-align: center;
+            color: red;
+            padding: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>TechTrend Innovationshop</h1>
+        <p>Your One-Stop Shop for Trending Tech, Home, and Pet Products</p>
+    </header>
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#products">Products</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="refund.html">Refund Policy</a></li>
+        </ul>
+    </nav>
+    <section class="hero">
+        <h2>Discover the Latest Trends in 2025</h2>
+        <p>Shop high-quality, in-demand products with fast shipping and secure payments.</p>
+        <a href="#products">Shop Now</a>
+    </section>
+    <section id="products" class="products">
+        <!-- Products will be populated by JavaScript -->
+    </section>
+    <section class="payment-options">
+        <h3>Secure Payments</h3>
+        <img src="https://stripe.com/img/v3/home/brand-logos/stripe-logo-white.png" alt="Stripe">
+        <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" alt="PayPal">
+    </section>
+    <footer>
+        <p>© 2025 TechTrend Innovationshop. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Loading and parsing CSV data from Amazon_Affiliate_Products.csv
+        const csvData = loadFileData("Amazon_Affiliate_Products.csv");
+        if (!csvData) {
+            console.error("Failed to load CSV data");
+            const productContainer = document.querySelector('.products');
+            productContainer.innerHTML = '<p class="error-message">Failed to load products. Please try again later.</p>';
+        } else {
+            // Parsing CSV data using PapaParse
+            Papa.parse(csvData, {
+                header: true,
+                skipEmptyLines: true,
+                transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
+                transform: (value, header) => {
+                    let cleaned = value.trim().replace(/^"|"$/g, '');
+                    return cleaned;
+                },
+                complete: (results) => {
+                    // Cleaning and processing data, filtering out incomplete or duplicate entries
+                    const cleanedData = results.data
+                        .filter(row => {
+                            return row["Product Name"] && row["Price"] && row["Affiliate Link"] && row["Image URL"] && row["Category"];
+                        })
+                        .map(row => ({
+                            category: row["Category"] || "Uncategorized",
+                            name: row["Product Name"] || "Unknown Product",
+                            price: row["Price"] || "N/A",
+                            image: row["Image URL"] || "https://via.placeholder.com/200x200?text=No+Image",
+                            link: row["Affiliate Link"] || "#"
+                        }))
+                        .filter((product, index, self) =>
+                            index === self.findIndex(p => p.name === product.name)
+                        );
+
+                    // Extracting unique categories
+                    const categories = [...new Set(cleanedData.map(product => product.category))];
+
+                    // Populating products by category
+                    const productContainer = document.querySelector('.products');
+                    if (cleanedData.length === 0) {
+                        productContainer.innerHTML = '<p class="error-message">No valid products found in the data.</p>';
+                    } else {
+                        categories.forEach(category => {
+                            const categoryDiv = document.createElement('div');
+                            categoryDiv.innerHTML = `<h2>${category}</h2>`;
+                            const categoryProducts = cleanedData.filter(product => product.category === category);
+                            categoryProducts.forEach(product => {
+                                const productCard = document.createElement('div');
+                                productCard.className = 'product-card';
+                                productCard.innerHTML = `
+                                    <img src="${product.image}" alt="${product.name}">
+                                    <h3>${product.name}</h3>
+                                    <p>${product.price}</p>
+                                    <a href="${product.link}" target="_blank">Buy Now on Amazon</a>
+                                `;
+                                categoryDiv.appendChild(productCard);
+                            });
+                            productContainer.appendChild(categoryDiv);
+                        });
+                    }
+                },
+                error: (err) => {
+                    console.error("Error parsing CSV:", err);
+                    const productContainer = document.querySelector('.products');
+                    productContainer.innerHTML = '<p class="error-message">Error parsing product data. Please try again later.</p>';
+                }
+            });
+        }
+    </script>
+</body>
+</html>
