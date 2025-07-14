@@ -1,48 +1,10 @@
-<script type="text/javascript">
-        var gk_isXlsx = false;
-        var gk_xlsxFileLookup = {};
-        var gk_fileData = {};
-        function filledCell(cell) {
-          return cell !== '' && cell != null;
-        }
-        function loadFileData(filename) {
-        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-            try {
-                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-                var firstSheetName = workbook.SheetNames[0];
-                var worksheet = workbook.Sheets[firstSheetName];
-
-                // Convert sheet to JSON to filter blank rows
-                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-                // Filter out blank rows (rows where all cells are empty, null, or undefined)
-                var filteredData = jsonData.filter(row => row.some(filledCell));
-
-                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
-                var headerRowIndex = filteredData.findIndex((row, index) =>
-                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-                );
-                // Fallback
-                if (headerRowIndex === -1 || headerRowIndex > 25) {
-                  headerRowIndex = 0;
-                }
-
-                // Convert filtered JSON back to CSV
-                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
-                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-                return csv;
-            } catch (e) {
-                console.error(e);
-                return "";
-            }
-        }
-        return gk_fileData[filename] || "";
-        }
-        </script><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TechTrend Innovationshop</title>
+    <script src="https://unpkg.com/papaparse@latest/papaparse.min.js"></script>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -162,7 +124,7 @@
         }
         footer {
             background-color: #1E90FF;
-            color: #FFFFFF podcast:0⁊
+            color: #FFFFFF;
             text-align: center;
             padding: 1rem;
         }
@@ -204,6 +166,11 @@
             background-color: #1E90FF;
             color: #FFFFFF;
         }
+        .error-message {
+            text-align: center;
+            color: red;
+            padding: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -233,71 +200,79 @@
         <img src="https://www.paypalobjects.com/webstatic/mktg/logo/pp_cc_mark_111x69.jpg" alt="PayPal">
     </section>
     <footer>
-        <p>&copy; 2025 TechTrend Innovationshop. All rights reserved.</p>
+        <p>© 2025 TechTrend Innovationshop. All rights reserved.</p>
     </footer>
 
     <script>
-        const products = [
-            {
-                category: "Tech",
-                name: "Wireless Charger",
-                price: "$15–$25",
-                image: "https://via.placeholder.com/200x200?text=Wireless+Charger",
-                link: "#"
-            },
-            {
-                category: "Home",
-                name: "Insulated Tumbler",
-                price: "$25–$40",
-                image: "https://via.placeholder.com/200x200?text=Insulated+Tumbler",
-                link: "#"
-            },
-            {
-                category: "Pet",
-                name: "Pet Collar",
-                price: "$12 “‘$20",
-                image: "https://via.placeholder.com/200x200?text=Pet+Collar",
-                link: "#"
-            },
-            {
-                category: "Tech",
-                name: "Neck Massager",
-                price: "$25–$45",
-                image: "https://via.placeholder.com/200x200?text=Neck+Massager",
-                link: "#"
-            },
-            {
-                category: "Home",
-                name: "Robot Vacuum Cleaner",
-                price: "$100–$150",
-                image: "https://via.placeholder.com/200x200?text=Robot+Vacuum",
-                link: "#"
-CJ Price: $50–$80.
-Amazon Price: $100–$150.
-Profit: $30–$60.
-            }
-        ];
+        // Loading and parsing CSV data from Amazon_Affiliate_Products.csv
+        const csvData = loadFileData("Amazon_Affiliate_Products.csv");
+        if (!csvData) {
+            console.error("Failed to load CSV data");
+            const productContainer = document.querySelector('.products');
+            productContainer.innerHTML = '<p class="error-message">Failed to load products. Please try again later.</p>';
+        } else {
+            // Parsing CSV data using PapaParse
+            Papa.parse(csvData, {
+                header: true,
+                skipEmptyLines: true,
+                transformHeader: (header) => header.trim().replace(/^"|"$/g, ''),
+                transform: (value, header) => {
+                    let cleaned = value.trim().replace(/^"|"$/g, '');
+                    return cleaned;
+                },
+                complete: (results) => {
+                    // Cleaning and processing data, filtering out incomplete or duplicate entries
+                    const cleanedData = results.data
+                        .filter(row => {
+                            // Ensure all required fields are present and non-empty
+                            return row["Product Name"] && row["Price"] && row["Affiliate Link"] && row["Image URL"] && row["Category"];
+                        })
+                        .map(row => ({
+                            category: row["Category"] || "Uncategorized",
+                            name: row["Product Name"] || "Unknown Product",
+                            price: row["Price"] || "N/A",
+                            image: row["Image URL"] || "https://via.placeholder.com/200x200?text=No+Image",
+                            link: row["Affiliate Link"] || "#"
+                        }))
+                        .filter((product, index, self) =>
+                            // Remove duplicates based on Product Name
+                            index === self.findIndex(p => p.name === product.name)
+                        );
 
-        const productContainer = document.querySelector('.products');
-        const categories = ['Tech', 'Home', 'Pet'];
+                    // Extracting unique categories
+                    const categories = [...new Set(cleanedData.map(product => product.category))];
 
-        categories.forEach(category => {
-            const categoryDiv = document.createElement('div');
-            categoryDiv.innerHTML = `<h2>${category}</h2>`;
-            const categoryProducts = products.filter(product => product.category === category);
-            categoryProducts.forEach(product => {
-                const productCard = document.createElement('div');
-                productCard.className = 'product-card';
-                productCard.innerHTML = `
-                    <img src="${product.image}" alt="${product.name}">
-                    <h3>${product.name}</h3>
-                    <p>${product.price}</p>
-                    <a href="${product.link}" target="_blank">Buy Now on Amazon</a>
-                `;
-                categoryDiv.appendChild(productCard);
+                    // Populating products by category
+                    const productContainer = document.querySelector('.products');
+                    if (cleanedData.length === 0) {
+                        productContainer.innerHTML = '<p class="error-message">No valid products found in the data.</p>';
+                    } else {
+                        categories.forEach(category => {
+                            const categoryDiv = document.createElement('div');
+                            categoryDiv.innerHTML = `<h2>${category}</h2>`;
+                            const categoryProducts = cleanedData.filter(product => product.category === category);
+                            categoryProducts.forEach(product => {
+                                const productCard = document.createElement('div');
+                                productCard.className = 'product-card';
+                                productCard.innerHTML = `
+                                    <img src="${product.image}" alt="${product.name}">
+                                    <h3>${product.name}</h3>
+                                    <p>${product.price}</p>
+                                    <a href="${product.link}" target="_blank">Buy Now on Amazon</a>
+                                `;
+                                categoryDiv.appendChild(productCard);
+                            });
+                            productContainer.appendChild(categoryDiv);
+                        });
+                    }
+                },
+                error: (err) => {
+                    console.error("Error parsing CSV:", err);
+                    const productContainer = document.querySelector('.products');
+                    productContainer.innerHTML = '<p class="error-message">Error parsing product data. Please try again later.</p>';
+                }
             });
-            productContainer.appendChild(categoryDiv);
-        });
+        }
     </script>
 </body>
 </html>
